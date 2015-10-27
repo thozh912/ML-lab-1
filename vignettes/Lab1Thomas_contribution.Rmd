@@ -17,7 +17,8 @@ The spambase data set contains observations of e-mails with columns consisting o
 library(XLConnect)
 library(kknn)
 
-#FROM THIS FILE LOCATION, EXCEL FILES SHOULD BE FOUND IN A SUBFOLDER IN THIS FILE LOCATION CALLED DATA
+#You gonna need java 64-bit for rJava and XLConnect to work
+#FROM "THIS FILE LOCATION", EXCEL FILES SHOULD BE FOUND IN A SUBFOLDER IN "THIS FILE LOCATION" CALLED DATA
 wb = loadWorkbook("D:/R_HW/ML-lab-1/data/spambase.xlsx")
 data = readWorksheet(wb, sheet = "spambase_data", header = TRUE)
 
