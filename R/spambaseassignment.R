@@ -1,6 +1,7 @@
 library(XLConnect)
 library(kknn)
 
+#FROM THIS FILE LOCATION, EXCEL FILES SHOULD BE FOUND IN A SUBFOLDER IN THIS FILE LOCATION CALLED DATA
 wb = loadWorkbook("data/spambase.xlsx")
 data = readWorksheet(wb, sheet = "spambase_data", header = TRUE)
 
@@ -66,13 +67,9 @@ knearest <- function(data, k, newdata){
   return(list(predicted = predictedclassprobsfornewdata, deletedrows = newdatazerorows))
 }
 
-
 #summarizing results with decision line p=0.5
 
 knn5 <- knearest(train,5,test)
-
-
-
 knn1 <- knearest(train,1,test)
 
 tabularize<-function(knn,decider,newdata){
@@ -107,10 +104,11 @@ tabularizekknn<-function(kknndata,decider){
       classified_by_kknn[v] <- 1
       }
   }
-  
-  tab <- table(Truth = test$Spam,classified_by_kknn)
+  truth <- test$Spam
+  tab <- table(Truth = truth,classified_by_kknn)
   return(tab)
 }
+
 
 tab <- tabularizekknn(kknndata,0.5)
 print(tab)
@@ -123,25 +121,32 @@ paste("Misclassification rate:",round(1-sum(diag(tab))/sum(tab),4),sep=" ")
 
 pi <- seq(0.05, 0.95, by=0.05)
 
+collect<-function(pi,knn,kknndata,newdata){
+    collector <-matrix(0,19,4)
+    for(b in 1:length(pi)){
+      target <- tabularize(knn,pi[b],newdata)
+      target2 <- tabularizekknn(kknndata,pi[b])
+      collector[b,1:2] <- c(target[2,2] / ( target[2,2] + target[2,1]) , target[1,1] / (target[1,1] + target[1,2]))
+      collector[b,3:4] <- c(target2[2,2] / ( target2[2,2] + target2[2,1]) , target2[1,1] / (target2[1,1] + target2[1,2]))
+      
+    }
+    return(collector)
+}
+
+plotthis <- collect(pi,knn5,kknndata,test)
+
+
+kknn_ROC <- data.frame(cbind(1 - plotthis[,4], plotthis[,3]))
+knearest_ROC <- data.frame(cbind(1 - plotthis[,2], plotthis[,1]))
+
+plot(kknn_ROC, type="l", col="blue", xlim=c(0.02,0.3), ylim=c(0.6,0.97),
+     xlab="1-Specificity (false positive rate)", ylab="Sensitivity (True positive rate)",
+     main="ROC curve for kknn and knearest function")
+lines(knearest_ROC, type="l", col="red")
+legend(0.15,0.9,c("kknn","knearest"),
+       lty=c(1,1),
+       lwd=c(2.5,2.5),col=c("blue","red"))
 
 
 
-wb2 = loadWorkbook("data/machines.xlsx")
-data2 = readWorksheet(wb2, sheet = "machines", header = TRUE)
-
-#Length is exp(theta) distributed. 
-
-#From wikipedia, for i.i.d. Lengths
-#likelihood is \prod_{i=1}^n \theta \exp{-\theta x_{i}}
-# = \theta^{n} \exp{-\theta n \bar{x}}
-
-# where \bar{x} is the sample mean of lengths x_{i}.
-
-#loglikelihood is n \ln{\theta} - \theta n \bar{x}
-#which has maximum when \theta = \dfrac{1}{\bar{x}}
-
-
-
-#\ln{\left(p(x | \theta) p(\theta)\right)} computes
-#the logarithm of the relative A posteriori probabilities p(\theta | x)
 
