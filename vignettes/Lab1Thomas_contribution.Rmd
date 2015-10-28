@@ -34,7 +34,7 @@ $$ X^T Y \over \sqrt{\sum_{i=1}X_i^2}\sqrt{\sum_{i=1}Y_i^2} $$
 In the spambase data set, there are rows with only zeros in all frequencies of words. these observations lie equidistant from all others and we simply delete them (while keeping in mind which rows they were).
 The code for the knearest function can be seen in the appendix. 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE,eval=TRUE}
 knearest <- function(data, k, newdata){
   
   dataspamindicator <- data$Spam
@@ -100,7 +100,7 @@ The implemented k-nearest-neighbor classifier returned the predicted probabiliti
 $\hat{y} = 1$ if p (Y = 1|X) > 0.5, otherwise $\hat{y} = 0$.
 
 With K, the number of neighbors, set to 5 the confusion matrix generated from classifying the test data and the misclassification rate for the test data looks like this:  
-```{r, echo=FALSE}
+```{r, echo=FALSE,eval=TRUE}
 tabularize<-function(knn,decider,newdata){
   classified_by_knn <- rep(0,length(knn$predicted))
   for(u in 1:length(knn$predicted)){
@@ -120,7 +120,7 @@ paste("Misclassification rate:",round(1-sum(diag(tab))/sum(tab),4),sep=" ")
 ```
 
 For the classification of the e-mails in the test data set using number of neighbours $K = 1$ we obtained confusion matrix and and the misclassification rate
-```{r, echo=FALSE}
+```{r, echo=FALSE,eval=TRUE}
 tab <- tabularize(knn1,.5,test)
 print(tab)
 paste("Misclassification rate:",round(1-sum(diag(tab))/sum(tab),4),sep=" ")
@@ -161,7 +161,7 @@ $$ Specificity = \dfrac{True Negative}{All Negative} $$
 The ROC curve is the TPR plotted against the FPR where FPR = 1-Specificity.
 The ROC for both models with $K=5$ are fitted and plotted in a graph.
 
-```{r, echo=FALSE, fig.pos="center"}
+```{r, echo=FALSE,eval=TRUE, fig.pos="center"}
 #ROC is TPR tp/(tp +fn) against FPR fp/(fp + tn) FPR = 1 - Specificity
 #Sensitivity is TPR, specificity is TNR tn/(tn + fp)
 
@@ -199,3 +199,343 @@ Some conclusions about the ROC curves is that both models seem to be pretty good
 as interpreted by the higher sensitvity it is capable of in return for having a lower possible specificity. A trade-off in these two characteristics seems likely. the ROC curve shows that when the decision value for the classification principle is low (high sensitvity) the *knearest* function performs better and for high decision values (low sensitivity) the *kknn* function performs a little bit better.
 
 Looking more closely at the respective lines it can be seen that the red one, *knearest*, only change direction when the decision value reaches 0.2, 0.4, 0.6 and so on. That is because those are the only possible preditced probabilites when $K=5$ in *knearest*. Apparently there is some difference in how the classifiers use the information about the five nearest neighbors. 
+
+## Assignment 2
+
+### 2.1 - 2.3
+```{r,echo=FALSE,message=FALSE}
+
+wb2 = loadWorkbook("D:/R_HW/ML-lab-1/data/machines.xlsx")
+data2 = readWorksheet(wb2, sheet = "machines", header = TRUE)
+
+
+#Length is exp(theta) distributed. 
+
+#From wikipedia, for i.i.d. Lengths
+#likelihood is \prod_{i=1}^n \theta \exp{-\theta x_{i}}
+# = \theta^{n} \exp{-\theta n \bar{x}}
+
+# where \bar{x} is the sample mean of lengths x_{i}.
+
+#loglikelihood is n \ln{\theta} - \theta n \bar{x}
+#which has maximum when \theta = \dfrac{1}{\bar{x}}
+
+loglik <- function(theta,x){
+  xmean <- mean(x)
+  n <- length(x)
+  loglik <- n * log(theta) - theta * n * xmean
+  return(loglik)
+}
+
+theta <- exp(seq(from = -2, to = 2, by = 0.05))
+```
+
+We see that the distribution of $x$ follows an exponential distribution with parameter $\theta$. A loglikelihood function for the outcome $x$ is in this case given by 
+$$f(\theta) = n \ln{\theta} - \theta n \bar{x} $$
+where $\bar{x}$ is the sample mean of lifetime lengths $x_{i}$ and $n$ is the number of lifetime lengths in $x$.
+
+We now plot this loglikelihood function over different $\theta$ in order to find the best $\theta$.
+
+```{r,echo=FALSE}
+plot(theta,loglik(theta,data2[,1]),type="l",xlab="theta",ylab="Log-likelihood",
+     main="Log-Likelihood function",log="x")
+
+paste0("Maximum loglikelihood: ",round(max(loglik(theta,data2[,1])),3),
+       " at theta = ",round(theta[which.max(loglik(theta,data2[,1]))],3))
+```
+
+
+We repeat the loglikelihood plot but this time with only the first six observations from the machine length data and compare this plot with the previous one.
+
+```{r,echo=FALSE}
+plot(theta,loglik(theta,data2[,1]),type="l",xlab="theta",ylab="Log-likelihood",
+     ylim=c(-80,10),main="Log-Likelihood function",log="x")
+lines(theta,loglik(theta,data2[1:6,1]),col="red")
+legend("topleft",c("all obs.","first six obs."),
+       lty=c(1,1),
+       lwd=c(2.5,2.5),col=c("black","red"))
+
+paste0("Maximum loglikelihood using first six lengths: ",round(max(loglik(theta,data2[1:6,1])),3),
+       " at theta = ",round(theta[which.max(loglik(theta,data2[1:6,1]))],3))
+```
+It looks as if the loglikelihood estimate of $\theta$ is much less reliable at a lower number of observations.
+
+### 2.4
+
+It seems as if $l(\theta)  = \ln{\left(p(x | \theta) p(\theta)\right)}$ computes the logarithm of the relative a posteriori probabilities $p(\theta | x)$. We plot this function for some $\theta$.
+
+```{r,echo=FALSE}
+#\ln{\left(p(x | \theta) p(\theta)\right)} computes
+#the logarithm of the relative A posteriori probabilities p(\theta | x)
+
+#Assuming x_{i} are i.i.d
+
+logposterior <- function(theta){
+  lambda <- 0.5
+  x <- data2[,1]
+  n <- length(x)
+  pp <- (theta)^n * lambda * exp(-theta * (sum(x) + lambda))
+  logposterior <- log(pp)
+  return(logposterior)
+}
+
+plot(theta,logposterior(theta),type="l",xlab="theta",ylab="Log-posterior",
+     ylim=c(-80,10),main="Log posterior function",log="x")
+
+paste0("Maximum logposterior: ",round(max(logposterior(theta)),3),
+       " at theta = ",round(theta[which.max(logposterior(theta))],3))
+```
+We find that the resulting plot is almost identical to the loglikelihood plot when using all lifetime lengths $x_{i}$. It seems they are in agreement over which $\theta$ is the best one given $x$.
+
+### 2.5
+Let us use the value $\theta = 1.105$ and simulate some outcomes of lifetime lengths $x_{i}$ and compare with the original outcomes.
+
+```{r,echo=FALSE}
+# We choose to use theta is 1.105
+
+thetavalue <- 1.105
+
+set.seed(12345)
+draws <-rexp(50, thetavalue)
+
+par(mfrow=c(1,2))
+hist(data2[,1],breaks=12, main="Original data",xlab="machine lifetime")
+hist(draws, breaks=12, main ="Simulated data",xlab="simulated machine lifetime")
+par(mfrow=c(1,1))
+
+```
+We see that the simulated lifetime lengths have a distribution much like the actual distribution of lifetime lengths. 
+
+##Appendix
+
+Spamassignment.R
+
+```{r,eval=FALSE}
+library(XLConnect)
+library(kknn)
+
+
+wb = loadWorkbook("data/spambase.xlsx")
+data = readWorksheet(wb, sheet = "spambase_data", header = TRUE)
+
+n=dim(data)[1]
+set.seed(12345)
+id=sample(1:n, floor(n*0.5))
+train=data[id,]
+test=data[-id,]
+
+
+knearest <- function(data, k, newdata){
+  
+  dataspamindicator <- data$Spam
+  data <- as.matrix(data)
+  data <- data[,-ncol(data),drop=FALSE]
+
+
+  # find out which data rows are the zero vector
+  datazerorows <-rep(TRUE,nrow(data))
+  for(g in 1:nrow(data)){
+    if(sum(data[g,]) == 0){
+      datazerorows[g] <- FALSE
+    }  
+  }
+  
+  data <- data[datazerorows,]
+  dataspamindicator <- dataspamindicator[datazerorows]
+  
+  newdata <- as.matrix(newdata)
+  newdata <- newdata[,-ncol(newdata),drop=FALSE]
+  
+  # find out which newdata rows are the zero vector
+  newdatazerorows <-rep(TRUE,nrow(newdata))
+  for(p in 1:nrow(newdata)){
+    if(sum(newdata[p,]) == 0){
+      newdatazerorows[p] <- FALSE
+    }  
+  }
+
+  newdata <- newdata[newdatazerorows,]
+
+  nearness <- matrix(0,k, as.numeric(nrow(newdata)))
+  
+  for(j in 1:nrow(newdata)){
+    distancesfromj <- rep(0,nrow(data))
+    for(i in 1:nrow(data)){
+      normalizing <- sqrt(sum(data[i,]^2)) * sqrt(sum(newdata[j,]^2)) 
+      result <- newdata[j,] %*% data[i,] / normalizing
+      dist <- 1 - result
+      
+      distancesfromj[i] <- dist
+    }
+    distancesfromj <- sort(distancesfromj, index.return = TRUE)
+    nearness[,j] <- distancesfromj$ix[1:k]
+  }
+  
+  nearness <- t(nearness)
+  predictedclassprobsfornewdata <- rep(0,nrow(nearness))
+  for(m in 1:nrow(nearness)){
+    predictedclassprobsfornewdata[m] <- sum(dataspamindicator[nearness[m,1:k]]) / k
+  }
+  
+  return(list(predicted = predictedclassprobsfornewdata, deletedrows = newdatazerorows))
+}
+
+#summarizing results with decision line p=0.5
+
+knn5 <- knearest(train,5,test)
+knn1 <- knearest(train,1,test)
+
+tabularize<-function(knn,decider,newdata){
+  classified_by_knn <- rep(0,length(knn$predicted))
+  for(u in 1:length(knn$predicted)){
+    if(knn$predicted[u] > decider){
+      classified_by_knn[u] <- 1
+    }
+  }
+  testdataspam <-newdata$Spam[knn$deletedrows]
+  
+  tab <- table(Truth = testdataspam,classified_by_knn)
+  return(tab)  
+}
+
+tab <- tabularize(knn5,.5,test)
+print(tab)
+paste("Misclassification rate:",round(1-sum(diag(tab))/sum(tab),4),sep=" ")
+
+tab <- tabularize(knn1,.5,test)
+print(tab)
+paste("Misclassification rate:",round(1-sum(diag(tab))/sum(tab),4),sep=" ")
+
+kknndata <- kknn( Spam ~. , train, test ,k = 5)
+
+#str(kknndata)
+
+tabularizekknn<-function(kknndata,decider){
+  classified_by_kknn <- rep(0,length(kknndata$fitted.values))
+  for(v in 1:length(kknndata$fitted.values)){
+    if(kknndata$fitted.values[v] > decider){
+      classified_by_kknn[v] <- 1
+      }
+  }
+  truth <- test$Spam
+  tab <- table(Truth = truth,classified_by_kknn)
+  return(tab)
+}
+
+
+tab <- tabularizekknn(kknndata,0.5)
+print(tab)
+paste("Misclassification rate:",round(1-sum(diag(tab))/sum(tab),4),sep=" ")
+
+#summary(kknndata)
+
+#ROC is TPR tp/(tp +fn) against FPR fp/(fp + tn) FPR = 1 - Specificity
+#Sensitivity is TPR, specificity is TNR tn/(tn + fp)
+
+pi <- seq(0.05, 0.95, by=0.05)
+
+collect<-function(pi,knn,kknndata,newdata){
+    collector <-matrix(0,19,4)
+    for(b in 1:length(pi)){
+      target <- tabularize(knn,pi[b],newdata)
+      target2 <- tabularizekknn(kknndata,pi[b])
+      collector[b,1:2] <- c(target[2,2] / ( target[2,2] + target[2,1]) ,
+                            target[1,1] / (target[1,1] + target[1,2]))
+      collector[b,3:4] <- c(target2[2,2] / ( target2[2,2] + target2[2,1]) ,
+                            target2[1,1] / (target2[1,1] + target2[1,2]))
+      
+    }
+    return(collector)
+}
+
+plotthis <- collect(pi,knn5,kknndata,test)
+
+
+kknn_ROC <- data.frame(cbind(1 - plotthis[,4], plotthis[,3]))
+knearest_ROC <- data.frame(cbind(1 - plotthis[,2], plotthis[,1]))
+
+plot(kknn_ROC, type="l", col="blue", xlim=c(0.02,0.3), ylim=c(0.6,0.97),
+     xlab="1-Specificity (false positive rate)", ylab="Sensitivity (True positive rate)",
+     main="ROC curve for kknn and knearest function")
+lines(knearest_ROC, type="l", col="red")
+legend(0.15,0.9,c("kknn","knearest"),
+       lty=c(1,1),
+       lwd=c(2.5,2.5),col=c("blue","red"))
+
+```
+
+machineassignment.R
+
+```{r,eval=FALSE}
+library(XLConnect)
+wb2 = loadWorkbook("data/machines.xlsx")
+data2 = readWorksheet(wb2, sheet = "machines", header = TRUE)
+
+
+#Length is exp(theta) distributed. 
+
+#From wikipedia, for i.i.d. Lengths
+#likelihood is \prod_{i=1}^n \theta \exp{-\theta x_{i}}
+# = \theta^{n} \exp{-\theta n \bar{x}}
+
+# where \bar{x} is the sample mean of lengths x_{i}.
+
+#loglikelihood is n \ln{\theta} - \theta n \bar{x}
+#which has maximum when \theta = \dfrac{1}{\bar{x}}
+
+loglik <- function(theta,x){
+  xmean <- mean(x)
+  n <- length(x)
+  loglik <- n * log(theta) - theta * n * xmean
+  return(loglik)
+}
+
+theta <- exp(seq(from = -2, to = 2, by = 0.05))
+
+plot(theta,loglik(theta,data2[,1]),type="l",xlab="theta",ylab="Log-likelihood",
+     ylim=c(-80,10),main="Log-Likelihood function",log="x")
+
+paste0("Maximum loglikelihood: ",round(max(loglik(theta,data2[,1])),3),
+       " at theta = ",round(theta[which.max(loglik(theta,data2[,1]))],3))
+
+lines(theta,loglik(theta,data2[1:6,1]),col="red")
+legend("topleft",c("all obs.","first six obs."),
+       lty=c(1,1),
+       lwd=c(2.5,2.5),col=c("black","red"))
+
+paste0("Maximum loglikelihood: ",round(max(loglik(theta,data2[1:6,1])),3),
+       " at theta = ",round(theta[which.max(loglik(theta,data2[1:6,1]))],3))
+
+#\ln{\left(p(x | \theta) p(\theta)\right)} computes
+#the logarithm of the relative A posteriori probabilities p(\theta | x)
+
+#Assuming x_{i} are i.i.d
+
+logposterior <- function(theta){
+  lambda <- 0.5
+  x <- data2[,1]
+  n <- length(x)
+  pp <- (theta)^n * lambda * exp(-theta * (sum(x) + lambda))
+  logposterior <- log(pp)
+  return(logposterior)
+}
+
+plot(theta,logposterior(theta),type="l",xlab="theta",ylab="Log-posterior",
+     ylim=c(-80,10),main="Log posterior function",log="x")
+
+paste0("Maximum logposterior: ",round(max(logposterior(theta)),3),
+       " at theta = ",round(theta[which.max(logposterior(theta))],3))
+
+# We choose to use theta is 1.105
+
+thetavalue <- 1.105
+
+set.seed(12345)
+draws <-rexp(50, thetavalue)
+
+par(mfrow=c(1,2))
+hist(data2[,1],breaks=12, main="Original data",xlab="machine lifetime")
+hist(draws, breaks=12, main ="Simulated data",xlab="simulated machine lifetime")
+par(mfrow=c(1,1))
+```
+
