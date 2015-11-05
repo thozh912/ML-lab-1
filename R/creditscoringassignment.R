@@ -131,6 +131,9 @@ for (i in 1:ntrain){
 }
 
 table(train$good_bad, preds)
+lossmatrnbayestrainproptrue <- count_true(preds,train$good_bad)
+paste("Misclassification rate of nbayesmodel with loss matrix for training data: ",
+      1-lossmatrnbayestrainproptrue)
 
 rawTest <- predict(nbayesmodel, newdata=test, type="raw")
 predtests <- c()
@@ -143,3 +146,6 @@ for (i in 1:ntest){
 }
 
 table(test$good_bad, predtests)
+lossmatrnbayestestproptrue <- count_true(predtests,train$good_bad)
+paste("Misclassification rate of nbayesmodel with loss matrix for test data: ",
+      1-lossmatrnbayestestproptrue)
