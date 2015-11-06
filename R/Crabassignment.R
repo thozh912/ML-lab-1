@@ -20,14 +20,6 @@ for(i in 1:n){
     Male[i] <- TRUE 
   }
 }
-
-Female <- !Male
-
-Male <- as.numeric(Male)
-Female <- as.numeric(Female)
-
-sexindicator <- cbind(Male,Female)
-
 #coef RW / CL = -2.71
 #slope = 2.713, intercept = -2.940
 
