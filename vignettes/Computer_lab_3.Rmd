@@ -28,9 +28,33 @@ legend("topleft",legend = levels(crabdata$sex),
 
 ```
 
-We can clearly distinguish two separate linear trends in the scatterplot. One trend for the male crabs and one trend for the female crabs. I think it will be easy to classify the sex for the larger crabs, since at larger values of CL and RW they are well separated from each other. At smaller values for the two variables it will be harder to classify with linear discriminant analysis, since the two trends are not well separated there.
+We can clearly distinguish two separate linear trends in the scatterplot. One trend for the male crabs and one trend for the female crabs. I think it will be easy to classify the sex for the larger crabs, since at larger values of CL and RW they are well separated from each other. At smaller values for the two variables it will be harder to classify with linear discriminant analysis (LDA), since the two trends are not well separated there.
 
-Proceeding now to perfrom home-made LDA and plot the results:
+\noindent The discriminant function used in LDA can be written as:\
+
+\[\delta_k(x)=x^T\Sigma^{-1}\mu_k-\frac{1}{2}\mu^T_k\Sigma^{-1}\mu_k+log(\pi_k) \]\
+
+\noindent where the estimates for $\Sigma$, $\mu_k$ and $\pi_k$ are given, with  $c$ denoting class $k$, $N$ denoting the total number of crabs and $N_{c}$ the total number of crabs in class $c$, as\
+\[\hat{\mu}_c=\frac{1}{N_c}\Sigma_{i:y_i=c}x_i \]\
+\[\hat{\Sigma}_c=\frac{1}{N_c}\Sigma(x_i-\hat{\mu}_c)(x_i-\hat{\mu}_c)^T \]\
+\[\hat{\Sigma}=\frac{1}{N}\Sigma_{c=1}^{k}N_c\hat{\Sigma}_c \]\
+\[\hat{\pi}_c=\frac{N_c}{N} \] \
+
+\noindent After fitting the model, the discriminant function for the male crabs $\delta_{male}(x)$ can be written:\
+
+\[\delta_{male}(x)=x^T\bigg(\begin{array}{c}
+2.592\\-0.216\
+\end{array}\bigg)-12.683 \] \
+
+\noindent and the discriminant function for the female crabs $\delta_{female}(x)$ can be written:\
+
+\[\delta_{female}(x)=x^T\bigg(\begin{array}{c}
+8.332\\-2.183\
+\end{array}\bigg)-22.648 \] \
+
+The decision boundary is drawn where $\delta_{male}(x) = \delta_{female}(x)$.
+
+Proceeding now to perform home-made LDA and plot the results:
 
 ```{r,echo=FALSE,fig.pos="center"}
 LDA <- function(df){

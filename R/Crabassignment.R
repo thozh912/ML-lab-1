@@ -101,7 +101,8 @@ LDA <- function(df){
   
   
   
-  print(solve(totalcov) %*% (Malecenter - Femalecenter))
+  print(solve(totalcov) %*% (Malecenter ))
+  print(solve(totalcov) %*% (Femalecenter ))
   print(paste("Male constant:",Maleconst))
   print(paste("Female constant:",Femaleconst))
   return(maleclassifier)
