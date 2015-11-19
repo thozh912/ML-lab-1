@@ -78,9 +78,9 @@ lines(data$Day,predict(ksvmepsregr2,newdata=data))
 paste("MSE for training data for most reasonable ksvm eps-svr model:",signif(ksvmepsregr1@error))
 
 #Residual Standard Error:0.316
-loessfit <- loess.as(data$Day,data$LMR,plot=TRUE,
+loessfit <- loess.as(data$Day,data$LMR,criterion="gcv",plot=TRUE,
                      main=c("Log of Fruitfly mortality rate vs day number",
-                            "loess.as  with 95% confidence bands"))
+                            "loess.as fit with 95% confidence bands"))
 pl <- predict(loessfit,se=TRUE)
 lines(data$Day,predict(loessfit,data$Day)-2*pl$se.fit,lty=2)
 lines(data$Day,predict(loessfit,data$Day)+2*pl$se.fit,lty=2)
