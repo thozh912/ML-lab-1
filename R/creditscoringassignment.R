@@ -101,8 +101,9 @@ text(besttree,pretty=5)
 
 predtestbest <- predict(besttree, newdata=test, type="class")
 testbestproptrue <- count_true(predtestbest,test$good_bad)
+table(test$good_bad,predtestbest)
 paste("Misclassification rate of besttree for test data: ",1-testbestproptrue)
-#table(test$good_bad,predtestbest)
+
 
 nbayesmodel <- naiveBayes(good_bad~.,data=train)
 
