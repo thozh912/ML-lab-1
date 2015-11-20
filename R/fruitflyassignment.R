@@ -2,7 +2,7 @@ library(XLConnect)
 library(fANCOVA)
 library(kernlab)
 #FROM THIS FILE LOCATION, EXCEL FILES SHOULD BE FOUND IN A SUBFOLDER IN THIS FILE LOCATION CALLED DATA
-wb = loadWorkbook("D:/R_HW/ML-lab-1/data/mortality_rate.xls")
+wb = loadWorkbook(paste0(getwd(),"/data/mortality_rate.xls"))
 data = readWorksheet(wb, sheet = 1, header = TRUE)
 LMR <- log(data$Rate)
 data[,3] <- LMR
