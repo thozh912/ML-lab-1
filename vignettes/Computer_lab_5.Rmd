@@ -20,7 +20,7 @@ library(XLConnect)
 library(fANCOVA)
 library(kernlab)
 #FROM THIS FILE LOCATION, EXCEL FILES SHOULD BE FOUND IN A SUBFOLDER IN THIS FILE LOCATION CALLED DATA
-wb = loadWorkbook("D:/R_HW/ML-lab-1/data/mortality_rate.xls")
+wb = loadWorkbook("C:/Users/Dator/Documents/R_HW/ML-lab-1/data/mortality_rate.xls")
 data = readWorksheet(wb, sheet = 1, header = TRUE)
 LMR <- log(data$Rate)
 data[,3] <- LMR
@@ -122,6 +122,8 @@ lines(data$Day,predict(loessfit,data$Day)-2*pl$se.fit,lty=2)
 lines(data$Day,predict(loessfit,data$Day)+2*pl$se.fit,lty=2)
 ```
 
+The trace of the smoother matrix, which I choose to interpret as smoothing parameter, is 13.53.
+
 The fit looks rather nice. None of the plots however, based on this data set, support the Gompertz hypothesis which if true would produce a straight line.
 
 ## Assignment 2
@@ -130,7 +132,7 @@ We plot the oleic vs linoleic acid contents of the olive oils coming from differ
 
 ```{r,echo=FALSE,message=FALSE}
 library(kernlab)
-olivedata <- read.csv("D:/R_HW/ML-lab-1/data/olive.csv")
+olivedata <- read.csv("C:/Users/Dator/Documents/R_HW/ML-lab-1/data/olive.csv")
 R2 <- as.factor(olivedata$Region == 2)
 olivedata[,12] <- R2
 names(olivedata)[12] <- "R2"
@@ -224,7 +226,7 @@ paste("Misclassification rate for Radial Basis kernel SVM with sigma = 10 and C 
       misclassrate(R2,rbfksvm2@fitted))
 ```
 
-We see that the three SVMs with gaussian RBF kernel performed better than the SVM with linear kernel where performance is measured by misclassification rate. this is not unexpected since linear kernal SVM can only construct linear decision boundries while gaussian RBF kernel SVM can construct non-linear boundries, such as the one better suited to separate region 2 oils from other oils. We also notice that when the penalty $C$ is increased, the number of support vectors is decreased. This is because only misclassified data points or data points inside the SVM hyperplane margin can become support vectors. An increased value of $C$ will decrease the size of the margin and make less vectors eligible to become support vectors. An increased value of gaussian kernel bandwidth parameter $\sigma$ increases the number of support vectors because the kernel will have to consider vectors further from the data point being classified. 
+We see that the three SVMs with gaussian RBF kernel performed better than the SVM with linear kernel where performance is measured by misclassification rate. this is not unexpected since linear kernal SVM can only construct linear decision boundries while gaussian RBF kernel SVM can construct non-linear boundries, such as the one better suited to separate region 2 oils from other oils. We also notice that when the penalty $C$ is increased, the number of support vectors is decreased. This is because only misclassified data points or data points inside the SVM hyperplane margin can become support vectors. An increased value of $C$ will decrease the size of the margin and make less vectors eligible to become support vectors. An increased value of gaussian kernel bandwidth parameter $\sigma$ increases the number of support vectors because the kernel will have to consider vectors further from the data point being classified.
 
 We also run a SVM multi-class classification with linear kernel that uses Region as response and all acids as predictors and estimate the 10-fold cross-validation score.
 
@@ -244,5 +246,5 @@ paste("Cross validation score:",signif(allacidsksvm@cross,3))
 The model seems to work well.
 
 ### Appendix - R-Code
-```{r code=readLines(knitr::purl("D:/R_HW/ML-lab-1/vignettes/Computer_lab_5.Rmd", documentation = 0)), eval = FALSE}
+```{r code=readLines(knitr::purl("C:/Users/Dator/Documents/R_HW/ML-lab-1/vignettes/Computer_lab_5.Rmd", documentation = 0)), eval = FALSE}
 ```

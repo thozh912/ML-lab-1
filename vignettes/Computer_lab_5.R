@@ -2,7 +2,7 @@ library(XLConnect)
 library(fANCOVA)
 library(kernlab)
 #FROM THIS FILE LOCATION, EXCEL FILES SHOULD BE FOUND IN A SUBFOLDER IN THIS FILE LOCATION CALLED DATA
-wb = loadWorkbook("D:/R_HW/ML-lab-1/data/mortality_rate.xls")
+wb = loadWorkbook("C:/Users/Dator/Documents/R_HW/ML-lab-1/data/mortality_rate.xls")
 data = readWorksheet(wb, sheet = 1, header = TRUE)
 LMR <- log(data$Rate)
 data[,3] <- LMR
@@ -82,7 +82,7 @@ pl <- predict(loessfit,se=TRUE)
 lines(data$Day,predict(loessfit,data$Day)-2*pl$se.fit,lty=2)
 lines(data$Day,predict(loessfit,data$Day)+2*pl$se.fit,lty=2)
 library(kernlab)
-olivedata <- read.csv("D:/R_HW/ML-lab-1/data/olive.csv")
+olivedata <- read.csv("C:/Users/Dator/Documents/R_HW/ML-lab-1/data/olive.csv")
 R2 <- as.factor(olivedata$Region == 2)
 olivedata[,12] <- R2
 names(olivedata)[12] <- "R2"
