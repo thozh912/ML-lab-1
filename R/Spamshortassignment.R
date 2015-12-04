@@ -2,6 +2,7 @@ data <- read.csv2("data/spambaseshort.csv")
 truespam <- data[,ncol(data)]
 data <- data[,-ncol(data)]
 data <- scale(data)
+
 set.seed(12345)
 index <- sample(1:nrow(data),floor(0.7 * nrow(data)))
 train <- data[index,]
@@ -10,25 +11,21 @@ train_truespam <- truespam[index]
 test_truespam <- truespam[-index]
 
 simple_perceptron_classif <- function(data,truespam,seed){
-  coefs <- rep(0,ncol(data))
-  for(j in 1:ncol(data)){
-    temp <- lm(truespam ~data[,j])
-    coefs[j] <- temp$coefficients[1]
-  }
-  
+
+  data <- cbind(data,rep(1,nrow(data)))
   set.seed(seed)
   weights <- rnorm(ncol(data))
   output <- rep(0,nrow(data))
 
   
   for(i in 1:nrow(data)){
-    for(j in 1:ncol(data)){
-      output[i] <- output[i] + weights[j] * data[i,j] + coefs[j]
+    for(j in 1:(ncol(data))){
+      output[i] <- output[i] + weights[j] * data[i,j]
     }
     output[i] <- sign(output[i])
   }
   
-  for(j in 1:ncol(data)){
+  for(j in 1:(ncol(data))){
     for(i in 1:nrow(data)){
       weights[j] <- (truespam[i]- output[i]) * 0.1 * data[i,j] + weights[j]
     }  
@@ -42,13 +39,13 @@ simple_perceptron_classif <- function(data,truespam,seed){
   while(prevmisclass - misclass > 0.01){
     prevmisclass <- misclass
     for(i in 1:nrow(data)){
-      for(j in 1:ncol(data)){
-        output[i] <- output[i] + weights[j] * data[i,j] + coefs[j]
+      for(j in 1:(ncol(data))){
+        output[i] <- output[i] + weights[j] * data[i,j]
       }
       output[i] <- sign(output[i])
     }
     
-    for(j in 1:ncol(data)){
+    for(j in 1:(ncol(data))){
       for(i in 1:nrow(data)){
         weights[j] <- (truespam[i]- output[i]) * 0.1 * data[i,j] + weights[j]
       }  
@@ -57,16 +54,17 @@ simple_perceptron_classif <- function(data,truespam,seed){
     counter <- counter + 1
   }
   
-  return(list(weights=weights,coefs= coefs,
+  return(list(weights=weights,
               misclassification_rate=misclass,counter = counter))
 }
 
 
-simple_percept_exec <- function(testdata,truespam,weights,coefs){
+simple_percept_exec <- function(testdata,truespam,weights){
+  testdata <- cbind(testdata,rep(1,nrow(testdata)))
   output <- rep(0,nrow(testdata))
   for(i in 1:nrow(testdata)){
     for(j in 1:ncol(testdata)){
-      output[i] <- output[i] + weights[j] * testdata[i,j] + coefs[j]
+      output[i] <- output[i] + weights[j] * testdata[i,j]
     }
     output[i] <- sign(output[i])
   }
@@ -75,10 +73,10 @@ simple_percept_exec <- function(testdata,truespam,weights,coefs){
 }
 
 firstlist <- simple_perceptron_classif(train,train_truespam,7235)
-simple_percept_exec(test,test_truespam,firstlist$weights,firstlist$coefs)
+simple_percept_exec(test,test_truespam,firstlist$weights)
 
 secondlist <- simple_perceptron_classif(train,train_truespam,846)
-simple_percept_exec(test,test_truespam,secondlist$weights,secondlist$coefs)
+simple_percept_exec(test,test_truespam,secondlist$weights)
 
 
 data <- read.csv2("data/spambaseshort.csv")
