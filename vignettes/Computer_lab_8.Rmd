@@ -1,6 +1,6 @@
 ---
-title: "Computer Lab 8"
-author: "Thomas Zhang"
+title: "Group Report Lab 8-Group 4"
+author: "Maxime Bonneau, Martina Sandberg, Thomas Zhang"
 date: "`r Sys.Date()`"
 output: 
   pdf_document:
@@ -13,7 +13,31 @@ vignette: >
 ---
 
 ## Assignment 1
-We want to classify the e-mails as spam or not spam using the word and character frequencies and the uninterrupted capital lettering data found in the file `spambaseshort.csv`. To this end we choose to train a simple perceptron model using 70% of the data available. The settings to be used for the model are exactly as described in the lab instructions. We train two models, one with `set.seed(7235)` and one with `set.seed(846)` and find the misclassification rate of the test data in each case.
+We want to classify the e-mails as spam or not spam using the word and character frequencies and the uninterrupted capital lettering data found in the file `spambaseshort.csv`. To this end we choose to train a simple perceptron model using 70% of the data available. The model works like this:
+
+\begin{equation}
+ f = \sigma(w_{0j} + w_j^TX) \,\,\,\, , \,\,\,\,  j=1.....K
+\end{equation}\
+
+
+
+
+\begin{equation}
+ sign(C)= \left\{ \begin{array}{rrl}
+  -1 & \mbox{if} & C < 0 \\
+  0 & \mbox{if} & C = 0 \\
+   1 & \mbox{if}& C > 0 \end{array}  \right. 
+   \end{equation}\
+   
+   
+\begin{equation}
+w_j = w_j + \lambda(y_i-\hat{y}_i)x_{ij}
+\end{equation}\
+
+
+\noindent We have the that the predicted output can be computed as (1) where $K$ is the amount of iterations needed, the combination function is given by $C = w_j^TX$, $\sigma$ is the activation function which is \textit{sign} (2) in our case and $w_j$ are the weights. The simple perceptron learning algorithm computes the weights as (3) where $y_{i} - \hat{y_{i}}$ is the difference between predicted and true output, $\lambda$ is the learning rate and we compute new weights until the misclassification rate has stopped decreasing. The implemented function can be seen in the appendix.\
+
+The settings to be used for the model are exactly as described in the lab instructions. We train two models, one with `set.seed(7235)` and one with `set.seed(846)` and find the misclassification rate of the test data in each case.
 
 ```{r,echo=FALSE}
 data <- read.csv2("C:/Users/Dator/Documents/R_HW/ML-lab-1/data/spambaseshort.csv")
@@ -87,6 +111,7 @@ simple_percept_exec <- function(testdata,truespam,weights){
     output[i] <- sign(output[i])
   }
   misclass <- 1 - length(which(output == truespam)) / nrow(testdata)
+  print(table(truespam,output))
   return(paste("Misclassification rate for test data:",signif(misclass,3)))
 }
 
@@ -139,6 +164,8 @@ A first impression suggests that the regression fit indeed will not be linear, b
 
 We now fit neural networks with one, two, four and five hidden nodes, all using `set.seed(7235)`, and investigate their fits, relative SSE and steps taken.
 
+
+
 ```{r,echo=FALSE}
 set.seed(7235)
 model1 <- neuralnet(LMR ~ Day, data = mort, hidden = 1,
@@ -158,6 +185,17 @@ model4 <- neuralnet(LMR ~ Day, data = mort, hidden = 5,
 
 ```
 ![alt text](C:/Users/Dator/Documents/R_HW/ML-lab-1/data/model1b.jpeg)
+
+The resulting equations of the neural network with one hidden node are, with linear output:
+
+\[
+Z = \sigma(5.4214-2.5196 X)
+\]\
+
+\[
+y = -0.3129  -2.4167 Z
+\]\
+
 ```{r,echo=FALSE}
 plot(LMR ~ Day, data = mort, type="l",col="red",lwd=2,
      main="One hidden node neuralnet fit",
@@ -167,7 +205,19 @@ points(x=mort$Day, unlist(model1$net.result), col="darkorange", type="l",
 legend("bottomright",legend = c("training data","neuralnet fit"),
        lty = c(1,1),col=c("red","darkorange"))
 ```
+
 ![alt text](C:/Users/Dator/Documents/R_HW/ML-lab-1/data/model2.png)
+
+The resulting equations of the neural network with two hidden nodes are, with linear output:
+
+\[
+Z = \sigma \left(    \begin{pmatrix} -2.7297 \\ 5.0538 \end{pmatrix}    +   \begin{pmatrix} 6.3590 \\ 7.9125 \end{pmatrix}   X \right) 
+\]\
+
+\[
+y = -1.8415  -3.9718 Z_1 + 3.3013 Z_2
+\]\
+
 ```{r,echo=FALSE}
 plot(LMR ~ Day, data = mort, type="l",col="red",lwd=2,
      main="Two hidden nodes neuralnet fit",
@@ -177,6 +227,9 @@ points(x=mort$Day, unlist(model2$net.result), col="darkorange", type="l",
 legend("bottomright",legend = c("training data","neuralnet fit"),
        lty = c(1,1),col=c("red","darkorange"))
 ```
+
+
+
 ![alt text](C:/Users/Dator/Documents/R_HW/ML-lab-1/data/model3.png)
 ```{r,echo=FALSE}
 plot(LMR ~ Day, data = mort, type="l",col="red",lwd=2,
@@ -199,6 +252,10 @@ legend("bottomright",legend = c("training data","neuralnet fit"),
 ```
 
 We clearly see that the more nodes, the smaller the SSE becomes up to four hidden nodes. The neural network fit becomes overfitted with more hidden nodes than four. We also see that the number of steps taken increase with number of hidden nodes. It appears as if the first two models do not produce good fits, while the last two models do produce good fits. To me, the fit using four nodes looks like the best fit (it also has the best SSE). I'd venture to say that more hidden nodes lead to better ability to fit non-linearities in the fitted curve.
+
+### Contributions
+
+All group members contributed to the report, which is based on Thomas lab raport. Martina donated the latex equations and helped with interpreting the output and Maxime provided helpful plotting suggestions.
 
 ### Appendix - R-Code
 ```{r code=readLines(knitr::purl("C:/Users/Dator/Documents/R_HW/ML-lab-1/vignettes/Computer_lab_8.Rmd", documentation = 0)), eval = FALSE}

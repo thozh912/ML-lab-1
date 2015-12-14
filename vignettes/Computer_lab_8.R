@@ -69,6 +69,7 @@ simple_percept_exec <- function(testdata,truespam,weights){
     output[i] <- sign(output[i])
   }
   misclass <- 1 - length(which(output == truespam)) / nrow(testdata)
+  print(table(truespam,output))
   return(paste("Misclassification rate for test data:",signif(misclass,3)))
 }
 
